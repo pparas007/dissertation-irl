@@ -1,0 +1,4 @@
+export PATH=/home/paras/anaconda2/bin:$PATH
+
+github repo
+https://github.com/MatthewJA/Inverse-Reinforcement-Learning
