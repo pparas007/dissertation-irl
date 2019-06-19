@@ -15,6 +15,7 @@ import gridworld as gridworld
 import plot as plot
 import deep_maxent_multiple as deep_maxent
 
+ 
 def miirl(method):
     theta=np.random.rand(no_clusters,feature_space)
     clusterPriors=np.full((no_clusters,), 1.0/no_clusters)
@@ -41,7 +42,7 @@ def performIRL(method,trajectoryPerClusterWeight):
         l1 = l2 = 0
         theta = deep_maxent.irl((feature_matrix.shape[1],) + network_structure, feature_matrix,
             gw.n_actions, discount, gw.transition_probability, trajectories, epochs,
-            learning_rate, trajectoryPerClusterWeight,l1=l1, l2=l2)
+            learning_rate, trajectoryPerClusterWeight, l1=l1, l2=l2)
         
     
     recovered_reward=feature_matrix.dot(theta).reshape((n_states,))
@@ -100,28 +101,35 @@ def computeClusterTrajectoryLoggedNormalization(t, logWeightedLikelihoods):
 
     return finalSum
 
-no_clusters=2        
+no_clusters=2
+        
 grid_size=5
-discount=0.01 
-n_trajectories=25
+grid_size=10
+
+discount=0.9
 learning_rate=0.01
 wind=0.3
+
 trajectory_length = 3*grid_size
 gw = gridworld.Gridworld(grid_size, wind, discount)
 ground_r = np.array([gw.reward(s) for s in range(gw.n_states)])
 
-feature_matrix = gw.feature_matrix()*2
+#feature_matrix = gw.feature_matrix()
+feature_matrix = gw.feature_matrix_100_68()
 #feature_matrix = gw.feature_matrix_goalVsOther()
 #feature_matrix = gw.feature_matrix_goalVsOtherTwo()
 #feature_matrix = gw.feature_matrix_goalVsOtherThree()
 feature_space=feature_matrix.shape[1]
 
 n_states, d_states = feature_matrix.shape
-trajectories = gw.my_generate_trajectories_multiple(n_trajectories,trajectory_length,gw.optimal_policy)
 
+#trajectories = gw.my_generate_trajectories_multiple(gw.optimal_policy)
+trajectories = gw.my_generate_trajectories_100(gw.optimal_policy)
+
+n_trajectories=trajectories.shape[0]
 no_of_iterations=5
-epochs=200
-network_structure=(3, 3)
+epochs=30
+network_structure=(50 , 50)
 
 if __name__ == '__main__':
     #miirl(method="linear")

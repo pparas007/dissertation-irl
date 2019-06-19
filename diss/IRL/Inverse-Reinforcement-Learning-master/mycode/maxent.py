@@ -1,9 +1,3 @@
-"""
-Implements maximum entropy inverse reinforcement learning (Ziebart et al., 2008)
-
-Matthew Alger, 2015
-matthew.alger@anu.edu.au
-"""
 
 from itertools import product
 
@@ -14,25 +8,6 @@ import value_iteration
 
 def irl(feature_matrix, n_actions, discount, transition_probability,
         trajectories, epochs, learning_rate):
-    """
-    Find the reward function for the given trajectories.
-
-    feature_matrix: Matrix with the nth row representing the nth state. NumPy
-        array with shape (N, D) where N is the number of states and D is the
-        dimensionality of the state.
-    n_actions: Number of actions A. int.
-    discount: Discount factor of the MDP. float.
-    transition_probability: NumPy array mapping (state_i, action, state_k) to
-        the probability of transitioning from state_i to state_k under action.
-        Shape (N, A, N).
-    trajectories: 3D array of state/action pairs. States are ints, actions
-        are ints. NumPy array with shape (T, L, 2) where T is the number of
-        trajectories and L is the trajectory length.
-    epochs: Number of gradient descent steps. int.
-    learning_rate: Gradient descent learning rate. float.
-    -> Reward vector with shape (N,).
-    """
-
     n_states, d_states = feature_matrix.shape
 
     # Initialise weights.
@@ -51,18 +26,10 @@ def irl(feature_matrix, n_actions, discount, transition_probability,
 
         theta += learning_rate * grad
         
-    return feature_matrix.dot(theta).reshape((n_states,))
+    #return feature_matrix.dot(theta).reshape((n_states,))
+    return theta
 
 def find_svf(n_states, trajectories):
-    """
-    Find the state visitation frequency from trajectories.
-
-    n_states: Number of states. int.
-    trajectories: 3D array of state/action pairs. States are ints, actions
-        are ints. NumPy array with shape (T, L, 2) where T is the number of
-        trajectories and L is the trajectory length.
-    -> State visitation frequencies vector with shape (N,).
-    """
 
     svf = np.zeros(n_states)
 
@@ -114,7 +81,7 @@ def find_expected_svf(n_states, r, n_actions, discount,
         trajectories and L is the trajectory length.
     -> Expected state visitation frequencies vector with shape (N,).
     """
-
+    
     n_trajectories = trajectories.shape[0]
     trajectory_length = trajectories.shape[1]
 
@@ -202,31 +169,4 @@ def find_policy(n_states, r, n_actions, discount,
     Q = np.exp(Q)/np.exp(Q).sum(axis=1).reshape((n_states, 1))
     return Q
 
-def expected_value_difference(n_states, n_actions, transition_probability,
-    reward, discount, p_start_state, optimal_value, true_reward):
-    """
-    Calculate the expected value difference, which is a proxy to how good a
-    recovered reward function is.
 
-    n_states: Number of states. int.
-    n_actions: Number of actions. int.
-    transition_probability: NumPy array mapping (state_i, action, state_k) to
-        the probability of transitioning from state_i to state_k under action.
-        Shape (N, A, N).
-    reward: Reward vector mapping state int to reward. Shape (N,).
-    discount: Discount factor. float.
-    p_start_state: Probability vector with the ith component as the probability
-        that the ith state is the start state. Shape (N,).
-    optimal_value: Value vector for the ground reward with optimal policy.
-        The ith component is the value of the ith state. Shape (N,).
-    true_reward: True reward vector. Shape (N,).
-    -> Expected value difference. float.
-    """
-
-    policy = value_iteration.find_policy(n_states, n_actions,
-        transition_probability, reward, discount)
-    value = value_iteration.value(policy.argmax(axis=1), n_states,
-        transition_probability, true_reward, discount)
-
-    evd = optimal_value.dot(p_start_state) - value.dot(p_start_state)
-    return evd

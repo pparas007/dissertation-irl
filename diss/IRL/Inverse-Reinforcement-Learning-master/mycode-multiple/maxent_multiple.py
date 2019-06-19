@@ -29,6 +29,20 @@ def irl(feature_matrix, n_actions, discount, transition_probability,
     #return feature_matrix.dot(theta).reshape((n_states,))
     return theta
 
+def find_svf(n_states, trajectories,trajectoryPerClusterWeight):
+
+    svf = np.zeros(n_states)
+    
+    i=0
+    for trajectory in trajectories:
+        for state, _, _ in trajectory:
+            svf[state] += (1*trajectoryPerClusterWeight[i])
+        i+=1
+
+    svf /= trajectories.shape[0]
+
+    return svf
+
 def find_feature_expectations(feature_matrix, trajectories):
     feature_expectations = np.zeros(feature_matrix.shape[1])
 
